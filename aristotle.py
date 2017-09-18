@@ -126,9 +126,11 @@ print("\nTerms: {}".format(terms))
 
 # ------------------------- Find solutions -------------------------
 
-from itertools import permutations
+from itertools import permutations, chain
+import math
 
-permutations_of_values = permutations(possible_values, len(independent_variables))
+
+#permutations_of_values = permutations(possible_values, len(independent_variables))
 
 def array_from_generator(generator, rows=100000):
     """Creates a numpy array from a specified number
@@ -141,9 +143,29 @@ def array_from_generator(generator, rows=100000):
             break
     return np.array(data)
 
+def n_chose_k(n, k, fac=math.factorial):
+    return fac(n)//fac(n-k)
+
+def permutations_as_arrays_generator(r, k, rows=100000):
+    n = len(r)
+    total_size = n_chose_k(n, k)
+    it = permutations(r, k)
+    while True:
+        batch_size = min(total_size, rows)
+        arr = np.fromiter(chain.from_iterable(it),
+                          count=batch_size*k, dtype=int)
+        total_size -= batch_size
+        arr.resize((batch_size, k))
+        yield arr
+
 count_tested = 0
 solutions = []
 batch_size = 5000000
+permutations_generator = permutations_as_arrays_generator(
+    possible_values,
+    len(independent_variables),
+    rows=batch_size
+)
 
 def quick_test(value):
     """Defines a quick test that every variable value
@@ -161,7 +183,8 @@ while True:
 
     while n_passed == 0:
 
-        batch_of_values = array_from_generator(permutations_of_values, batch_size)
+        #batch_of_values = array_from_generator(permutations_of_values, batch_size)
+        batch_of_values = next(permutations_generator)
         batch_size = batch_of_values.shape[0]
 
         if batch_size == 0:
