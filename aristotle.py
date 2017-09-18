@@ -133,6 +133,10 @@ def n_chose_k(n, k, fac=math.factorial):
     return fac(n)//fac(n-k)
 
 def permutations_as_arrays_generator(r, k, rows=100000):
+    """Returns a generator that will yield one or
+    more numpy arrays of no more than the specified
+    number of rows containing successive k-length
+    permutations of the elements in the iterable r."""
     n = len(r)
     total_size = n_chose_k(n, k)
     it = permutations(r, k)
