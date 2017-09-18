@@ -12,7 +12,7 @@ Requires the following packages to be installed:
  - sympy
  - numpy
 
-WARNING: This script can take a long time to complete!
+WARNING: This script can take a long time to execute!
 """
 
 
@@ -128,20 +128,6 @@ print("\nTerms: {}".format(terms))
 
 from itertools import permutations, chain
 import math
-
-
-#permutations_of_values = permutations(possible_values, len(independent_variables))
-
-def array_from_generator(generator, rows=100000):
-    """Creates a numpy array from a specified number
-    of values from the generator provided."""
-    data = []
-    for row in range(rows):
-        try:
-            data.append(next(generator))
-        except StopIteration:
-            break
-    return np.array(data)
 
 def n_chose_k(n, k, fac=math.factorial):
     return fac(n)//fac(n-k)
