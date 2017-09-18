@@ -1,9 +1,23 @@
+#!/usr/bin/env python
+
+"""
+Python script to solve Aristotle's Number Puzzle
+
+Author: Bill Tubbs, September 2017.
+
+See here for a description of the puzzle:
+https://hwiechers.blogspot.ca/2013/03/solving-artitotles-number-puzzle.html
+
+Requires the following packages to be installed:
+ - sympy
+ - numpy
+
+WARNING: This script can take a long time to complete!
+"""
 
 
-# Python scipt to solve Aristotle's Number Puzzle
-# See here for a description of the puzzle:
-# https://hwiechers.blogspot.ca/2013/03/solving-artitotles-number-puzzle.html
-
+print("\nPython script to solve Aristotle's Number Puzzle")
+print("------------------------------------------------")
 
 # ----------------- First use SymPy to reduce equations -----------------
 
@@ -20,6 +34,11 @@ variables = symbols(variable_names)
 
 print("\n{} unknowns:".format(len(variables)))
 print(variables)
+
+possible_values = set(range(1, n_unknowns + 1))
+
+print("\n{} possible values:".format(len(possible_values)))
+print(possible_values)
 
 # These strings define the equations to be solved
 hexagon_rows = [
@@ -66,18 +85,13 @@ for var, expr in reduced_expressions.items():
 import numpy as np
 
 dependent_variables = list(reduced_expressions.keys())
-independent_variables = list(variables - reduced_expressions.keys())
+independent_variables = list(set(variables) - set(reduced_expressions.keys()))
 
 print("\n{} independent variables:".format(len(independent_variables)))
 print(independent_variables)
 
 print("\n{} dependent variables:".format(len(dependent_variables)))
 print(dependent_variables)
-
-possible_values = set(range(1, n_unknowns + 1))
-
-print("\n{} possible values:".format(len(possible_values)))
-print(possible_values)
 
 # Generate array representations of expressions
 
@@ -116,20 +130,16 @@ from itertools import permutations
 
 permutations_of_values = permutations(possible_values, len(independent_variables))
 
-def array_from_generator(generator, arr):
-    """Fills the numpy array provided with values from
-    the generator provided. Number of columns in arr
-    must match the number of values yielded by the
-    generator."""
-    count = 0
-    for row in arr:
+def array_from_generator(generator, rows=100000):
+    """Creates a numpy array from a specified number
+    of values from the generator provided."""
+    data = []
+    for row in range(rows):
         try:
-            item = next(generator)
+            data.append(next(generator))
         except StopIteration:
             break
-        row[:] = item
-        count += 1
-    return arr[:count,:]
+    return np.array(data)
 
 count_tested = 0
 solutions = []
@@ -150,16 +160,15 @@ while True:
     n_passed = 0
 
     while n_passed == 0:
-        print("\nTesting {} permutations...".format(batch_size))
 
-        empty_array = np.empty((batch_size, len(independent_variables)), dtype=int)
-        batch_of_values = array_from_generator(permutations_of_values, empty_array)
+        batch_of_values = array_from_generator(permutations_of_values, batch_size)
         batch_size = batch_of_values.shape[0]
 
         if batch_size == 0:
             print("\nAll {} permutations now checked".format(count_tested))
             break
 
+        print("\nTesting {} permutations...".format(batch_size))
         # Add column of 1s to represent constant terms
         batch_of_values = np.concatenate(
             (
@@ -197,11 +206,12 @@ while True:
 
     print(" {} solution{} found{}".format(
         'No' if n_solutions == 0 else n_solutions,
-        's' if n_solutions > 1 else '',
+        '' if n_solutions == 1 else 's',
         ' '*20 + '*'*n_solutions if n_solutions > 0 else ''
     ))
 
-print("\nIn total, {} solutions found:".format(n_solutions))
+print("\nIn total, {} solutions found:".format(len(solutions)))
+print(variables)
 for i, solution in enumerate(solutions):
     values = [item[1] for item in sorted([(x[0].name, x[1]) for x in solution.items()])]
     print("{}: {}".format(i, values))
